@@ -1,13 +1,10 @@
 import express from 'express'
-import prisma from './lib/prisma'
+import router from './routes/user'
 const app = express()
 app.use(express.json())
+app.use('/api', router)
 app.get('/', (req, res) => {
     res.send('Hello, World!')
-})
-app.get('/user', async (req, res) => {
-    const users = await prisma.user.findMany()
-    res.send(users)
 })
 const port = 3000
 app.listen(port, () => {
