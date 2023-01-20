@@ -2,15 +2,38 @@ import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
 
 export const getUsers = async (req: Request, res: Response) => {
-    const users = await prisma.user.findMany()
-    res.status(200).json(users)
+    if (Object.keys(req.query).length === 0) {
+        try { 
+            const users = await prisma.user.findMany()
+            res.status(200).json(users)
+        } catch (err: any) {
+            return res.status(500).json({ message: err.message })
+        }
+    } else {
+        const select = req.query.select as string
+        const selectData = select ? select.split(',') : []
+        const selectObj = selectData.reduce((acc, val) => {
+            return {
+                ...acc,
+                [val]: true
+            }
+        }, {})
+        try {
+            const users = await prisma.user.findMany({
+                select: selectObj,
+            })
+            return res.status(200).json(users)
+        } catch (err: any) {
+            return res.status(500).json({ message: err.message })
+        }
+    }
 }
 
 export const getUserById = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({
         where: {
             id: req.params.id,
-        },
+        }
     })
     res.status(200).json(user)
 }
